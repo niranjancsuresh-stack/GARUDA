@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" href="assets/logo-dark.webp">
+  <meta name="author" content="Niranjan CS">
+  <meta name="description" content="G.A.R.U.D.A. - Ground-link Automated Receiver &amp; Unified Data Analyzer. A friendly CubeSat ground station dashboard, crafted by Niranjan CS.">
+  <title>G.A.R.U.D.A. · Mission Control</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      corePlugins: { preflight: false },
+      darkMode: ['selector', '[data-theme="dark"]']
+    };
+  </script>
+  <style>
+:root{--bg:#ffffff;--card:#ffffff;--line:#d9d9de;--edge:#a33a3f;--tx:#000;--mut:#555;--g:#3a3a3f;--r:#d9302b;--b:#7a8594;--p:#2a2a2e;--soft:#f0f0f2;--grid:#e2e2e6;--line2:#e4e4e8;--mapbg:#ececee;--road:#cfcfd4;--road2:#d9d9de;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{--bg:#0b0b0d;--card:#131316;--line:#2a2a30;--edge:#6a1f25;--tx:#ececec;--mut:#8f8f98;--g:#c4c4c0;--soft:#1b1b1f;--grid:#26262c;--line2:#222227;--mapbg:#161618;--road:#3a3a3f;--road2:#2c2c30}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:50%;box-shadow:0 0 0 1px #3a3a3f}.logo img{width:100%;height:100%;display:block;border-radius:50%}
+.org b{font-size:19px;font-weight:700;letter-spacing:.14em;color:#000}
+h1{font-size:18px;font-weight:500;margin:0 0 0 12px;padding-left:16px;border-left:1px solid var(--line)}
+.sp{flex:1}
+button{font:inherit;font-size:12px;padding:8px 16px;border-radius:6px;border:1px solid transparent;color:#fff;cursor:pointer;letter-spacing:.03em}
+button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#conn{background:#a31f1f}#conn.on{background:#3a3a3f}.sup{background:#2a2a2e}.dl{background:#111;color:#fff}
+main{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;padding:18px 22px 40px;max-width:1500px;margin:auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.card.ch{border-color:var(--edge)}
+.card h2{font-size:16px;font-weight:500;margin:0 0 6px}
+.c4{grid-column:span 4}.c8{grid-column:span 8}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}
+.top{display:grid;grid-template-columns:1fr;gap:14px;grid-column:span 12;grid-template-columns:repeat(3,1fr)}
+.stack{display:grid;gap:14px;grid-template-rows:1fr 1fr}
+.map{padding:0;overflow:hidden;position:relative;min-height:170px}
+.map svg{width:100%;height:100%;display:block}
+.map span{position:absolute;left:10px;top:8px;font-weight:600;color:var(--tx)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;height:100%}
+.lbl{font-size:12px;color:var(--mut)}.big{font-size:22px;font-weight:500}
+.chip{background:var(--soft);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--mut);text-align:center}.chip b{display:block;color:var(--tx);font-size:14px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:46px}.bars i{width:9px;background:#16a34a;border-radius:2px}
+canvas{width:100%;height:150px;display:block}
+.val{display:flex;justify-content:space-between;align-items:center;background:var(--soft);border-radius:8px;padding:8px 12px;margin-top:8px}
+.val b{font-size:22px;font-weight:500}.val small{color:var(--mut);font-size:10px;text-align:right}
+.raw{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 18px;font-size:12px}
+.raw div{display:flex;justify-content:space-between;gap:6px;border-bottom:1px solid var(--line2);padding:2px 0}.raw span{color:var(--mut)}
+.leg{display:flex;gap:12px;font-size:11px;color:var(--mut)}.leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+header{display:block}.hd1{display:flex;align-items:center;gap:14px;margin-bottom:12px}.ttl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sub{font-size:13px;color:var(--mut);margin-top:3px}.ttl h1{margin:0;padding-left:16px;font-size:20px}
+.tag{font:600 12px ui-monospace,Menlo,Consolas,monospace;color:#b3201c;border:1px solid #d9302b;background:#fdecec;border-radius:4px;padding:3px 8px;letter-spacing:.04em}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;background:#f6f6f8}
+.pill i{width:10px;height:10px;border-radius:50%;background:#d9302b;display:inline-block}
+.ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.seg{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:8px;background:#f0f0f2}
+.seg button{background:transparent;color:#000;font-weight:600;padding:6px 12px}.seg button.act{background:#a31f1f;color:#fff}
+select{font:inherit;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:#f6f6f8;color:#000}
+.ctl button{font-weight:600;font-size:13px;padding:9px 16px;border-radius:8px}
+.b-red{background:#a31f1f}.b-gry{background:#e4e4e8;color:#000;border-color:var(--line)}.b-ind{background:#eceeff;color:#3730a3;border-color:#c7cbf5}.b-crim{background:#8b1034}
+.note{font-size:12px;color:#b3201c}.sketch{background:#f6f6f8;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:11px;overflow-x:auto;margin:10px 0 0;white-space:pre-wrap}
+@media(max-width:900px){.top{grid-template-columns:1fr}.c4,.c8,.c5,.c6,.c7{grid-column:span 12}.raw{grid-template-columns:repeat(2,1fr)}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+header{background:#08080a;color:#f2f2f2;padding:16px 22px 14px;border-bottom:1px solid #1d1d22}
+header .logo{width:56px;height:56px;flex:none;box-shadow:0 0 0 1px #2a2a30}
+header .org b{color:#fff;font-size:22px;font-weight:800;letter-spacing:.22em}
+header .ttl h1{color:#fff;font-size:22px;font-weight:600;border-left:1px solid #33333a;padding-left:16px;margin-left:4px}
+header .sub{color:#9a9aa6;margin-top:5px}
+header .tag{color:#ff5a52;background:#2a0d0f;border:1px solid #7a1c1f;padding:6px 10px}
+header .pill{background:#15151a;border:1px solid #2c2c33;color:#f2f2f2;padding:6px 14px;font-size:13px}
+header .pill i{background:#c01f27}
+header .ctl{margin-top:14px}header .ctl+.ctl{margin-top:10px}
+header .seg{background:#0d1422;border-color:#1c2a44;border-radius:10px}
+header .seg button{color:#fff;padding:8px 14px;border-radius:7px}header .seg button.act{background:#a31f1f}
+header select{background:#0d1422;border-color:#27324a;color:#fff}
+header .b-gry{background:#141b2b;color:#fff;border-color:#26314a}
+header .b-ind{background:#1a1448;color:#a5a3ff;border-color:#3a30a0}
+header .dl{background:#141b2b;border-color:#26314a;color:#fff}
+header .note{color:#ff9b96}
+header .sketch{background:#0d1422;border-color:#27324a;color:#cfd3e0}
+
+.map svg [fill="#ececee"]{fill:var(--mapbg)}.map svg [stroke="#cfcfd4"]{stroke:var(--road)}.map svg [stroke="#d9d9de"]{stroke:var(--road2)}
+.map svg rect[fill="#fff"],.map svg circle[fill="#fff"]{fill:var(--card)}.map svg text{fill:var(--mut)}
+.row svg [stroke="#bbb"]{stroke:var(--line)}.row svg[stroke="#000"]{stroke:var(--tx)}.row svg circle[fill="#000"]{fill:var(--tx)}
+main[hidden]{display:none}.c12{grid-column:span 12}
+.tb{width:100%;border-collapse:collapse;font-size:13px}.tb th{text-align:left;color:var(--mut);font-weight:500;padding:4px 6px}.tb td{padding:5px 6px;border-top:1px solid var(--line2)}
+.tb input,.tools input,.tools select{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--soft);color:var(--tx);font:inherit}.tb input{width:76px}
+.ok{color:#16a34a}.bad{color:#d9302b;font-weight:600}
+.al{display:flex;align-items:center;gap:10px;padding:9px 10px;border-left:4px solid #d9302b;border-radius:8px;margin-bottom:8px;background:var(--soft)}.al.ack{border-left-color:#d4a017}.al span{flex:1}.al small{color:var(--mut)}
+.nom{padding:14px;border-radius:8px;background:var(--soft);color:#16a34a;font-weight:600}
+.ty{font:700 11px ui-monospace,Menlo,Consolas,monospace;padding:2px 7px;border-radius:4px;background:var(--soft)}.ty.ALERT{color:#d9302b}.ty.CLEARED{color:#16a34a}.ty.NOTE{color:#4f6bd9}
+.lg{max-height:340px;overflow:auto}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.tools input{flex:1;min-width:180px}
+main .btn{background:#2a2a2e;color:#fff;padding:7px 14px;font-size:12px}
+.bdg{display:inline-block;min-width:18px;padding:1px 6px;margin-left:6px;border-radius:9px;background:#d9302b;color:#fff;font-size:11px}
+@media(max-width:900px){.c12{grid-column:span 12}}
+/* Adaptive Theme Extensions for Page 2 (GSU Serial & Wheels) and Cyber GSU View */
+.mortis-main {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  padding: 18px 22px 40px;
+  max-width: 1500px;
+  margin: auto;
+}
+.mortis-main[hidden] { display: none !important; }
+.m-page-banner {
+  grid-column: span 12;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--soft);
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--tx);
+}
+.m-page-banner b {
+  color: var(--tx);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.m-btn {
+  font: inherit;
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--p);
+  color: #fff;
+  cursor: pointer;
+}
+.m-dl {
+  background: #111;
+  color: #fff;
+  font-weight: 600;
+}
+:root[data-theme="dark"] .m-dl {
+  background: #cfcfcb;
+  color: #16161a;
+}
+.glass-card {
+  background: var(--card) !important;
+  border: 1px solid var(--edge) !important;
+  color: var(--tx) !important;
+  box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.18);
+}
+#cyberMain {
+  background: var(--bg);
+  color: var(--tx);
+}
+#cyberMain [class*="bg-slate-950"],
+#cyberMain [class*="bg-slate-900"],
+#cyberMain [class*="bg-slate-800"] {
+  background-color: var(--soft) !important;
+  border-color: var(--line) !important;
+  color: var(--tx) !important;
+}
+#cyberMain [class*="text-white"],
+#cyberMain [class*="text-slate-200"],
+#cyberMain [class*="text-slate-300"] {
+  color: var(--tx) !important;
+}
+#cyberMain [class*="text-slate-400"],
+#cyberMain [class*="text-slate-500"] {
+  color: var(--mut) !important;
+}
+
+  main#cyberMain:not(.hidden){display:block;max-width:1600px;padding:16px}
+
+:root:not([data-theme="dark"]) header{background:#fff;color:#111;border-bottom:1px solid #d9d9de}
+:root:not([data-theme="dark"]) header .logo{box-shadow:0 0 0 1px #d4d4d8}
+:root:not([data-theme="dark"]) header .org b,:root:not([data-theme="dark"]) header .ttl h1{color:#000}
+:root:not([data-theme="dark"]) header .ttl h1{border-left-color:#d4d4d8}
+:root:not([data-theme="dark"]) header .sub{color:#55555c}
+:root:not([data-theme="dark"]) header .tag{color:#b3261e;background:#fdecea;border-color:#e8b4b0}
+:root:not([data-theme="dark"]) header .pill{background:#f3f3f5;border-color:#d9d9de;color:#111}
+:root:not([data-theme="dark"]) header .seg{background:#f0f0f2;border-color:#d9d9de}
+:root:not([data-theme="dark"]) header .seg button{color:#111}
+:root:not([data-theme="dark"]) header .seg button.act{color:#fff}
+:root:not([data-theme="dark"]) header select{background:#fff;border-color:#c9c9d0;color:#111}
+:root:not([data-theme="dark"]) header .b-gry,:root:not([data-theme="dark"]) header .dl{background:#f0f0f2;color:#111;border-color:#d4d4d8}
+:root:not([data-theme="dark"]) header .b-ind{background:#ecebff;color:#3d34b0;border-color:#bdb8f5}
+:root:not([data-theme="dark"]) header .note{color:#b3261e}
+:root:not([data-theme="dark"]) header .sketch{background:#f5f5f7;color:#222;border-color:#d4d4d8}
+html,body,button,select,input,textarea,.font-sans{font-family:'Saira','Segoe UI',system-ui,-apple-system,Roboto,sans-serif}
+.font-mono,.mono-val,pre,code,#baud,select#baud,select#baudSelect,.tag{font-family:ui-monospace,Menlo,Consolas,monospace}
+header .org b,header .org{letter-spacing:0 !important;word-spacing:0}
+.chart-filter-btn{background:transparent;border:0}
+.chart-filter-btn.bg-cyan-600{background:#0891b2;color:#fff}
+.chart-filter-btn:not(.bg-cyan-600){color:var(--tx,#ececec)}
+.chart-filter-btn:not(.bg-cyan-600):hover{background:rgba(8,145,178,.18)}
+.setup-ov{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:16px}
+.setup-ov.open{display:flex}
+.setup-box{width:100%;max-width:440px;background:#111113;color:#ececec;border:1px solid #5c1a1f;border-radius:14px;padding:22px 22px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.setup-box h2{margin:0 0 4px;font-size:20px;font-weight:700}.setup-box p{margin:0 0 16px;color:#9a9aa6;font-size:13px}
+.setup-box label{display:block;font-size:12px;font-weight:600;margin:12px 0 5px;color:#b8b8c2}
+.setup-box input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2c2c33;background:#08080a;color:#fff;font:inherit;font-size:14px}
+.setup-box input:focus{outline:2px solid #a31f1f;outline-offset:1px}
+.setup-act{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.setup-act button{padding:10px 18px;border-radius:8px;border:1px solid #2c2c33;background:#1a1a1f;color:#fff;font-weight:600;cursor:pointer}
+.setup-act button.go{background:#a31f1f;border-color:#a31f1f}
+:root:not([data-theme="dark"]) .setup-box{background:#fff;color:#111;border-color:#d9d9de}
+:root:not([data-theme="dark"]) .setup-box p{color:#55555c}:root:not([data-theme="dark"]) .setup-box label{color:#333}
+:root:not([data-theme="dark"]) .setup-box input{background:#f5f5f7;border-color:#cfcfd6;color:#000}
+:root:not([data-theme="dark"]) .setup-act button{background:#f0f0f2;color:#111;border-color:#d4d4d8}
+:root:not([data-theme="dark"]) .setup-act button.go{background:#a31f1f;color:#fff}
+.logo{width:60px!important;height:60px!important;border-radius:12px!important;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:12px!important;display:block}
+.logo .logo-l{display:none}
+:root:not([data-theme="dark"]) .logo .logo-d{display:none}
+:root:not([data-theme="dark"]) .logo .logo-l{display:block}
+.logo{width:72px!important;height:72px!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible}
+.logo img{border-radius:0!important;object-fit:contain}
+:root:not([data-theme="dark"]) :root:not([data-theme="dark"]) :root:not([data-theme="dark"]) :root:not([data-theme="dark"]) #firmwareModal h2,:root:not([data-theme="dark"]) #firmwareModal h3,:root:not([data-theme="dark"]) #firmwareModal .text-white{color:#0f172a}
+:root:not([data-theme="dark"]) #firmwareModal .bg-slate-950 .text-white,:root:not([data-theme="dark"]) #firmwareModal pre{color:#e2e8f0}
+.logo{width:auto!important;height:84px!important;border-radius:0!important;overflow:visible}
+.logo img{height:100%!important;width:auto!important;object-fit:contain;border-radius:0!important}
+.logo .logo-d{mix-blend-mode:screen;filter:none}
+.logo .logo-l{mix-blend-mode:multiply;filter:none}
+header .org{display:block!important}
+/* Smooth day/night switch */
+body,header,.card,.glass-card,button,select,input,pre{transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease}
+/* Night mode: deep slate with glowing cyan accents (tactical Cyber GSU look) */
+:root[data-theme="dark"]{--bg:#05080d;--card:#0c121a;--soft:#141c26;--line:#1c2733;--line2:#18212b;--edge:#0e7490}
+:root[data-theme="dark"] body{background:radial-gradient(1100px 420px at 50% -8%,rgba(34,211,238,.09),transparent 65%),#05080d}
+:root[data-theme="dark"] header{border-bottom:1px solid rgba(34,211,238,.35);box-shadow:0 1px 26px rgba(34,211,238,.13)}
+:root[data-theme="dark"] .card,:root[data-theme="dark"] .glass-card{border-color:rgba(34,211,238,.28)!important;box-shadow:0 0 22px rgba(34,211,238,.07)}
+:root[data-theme="dark"] header button:hover{box-shadow:0 0 14px rgba(34,211,238,.4)}
+:root[data-theme="dark"] .acro b{color:#22d3ee;text-shadow:0 0 10px rgba(34,211,238,.6)}
+/* Day mode: crisp and bright for sunny field tests */
+:root:not([data-theme="dark"]) .acro b{color:#a31f1f}
+.acro{font-size:15px;font-weight:600;letter-spacing:.01em}.acro b{font-size:17px}
+.gfoot{text-align:center;padding:22px 16px 34px;font-size:13px;color:var(--mut);border-top:1px solid var(--line);margin-top:8px}
+.warn{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;padding:12px 18px;background:#fff7e0;color:#5a4300;border-bottom:1px solid #f0d98a;font-size:14px;text-align:center}
+.warn button{background:#5a4300;color:#fff;border:0;border-radius:8px;padding:7px 14px;font-weight:600;cursor:pointer}
+:root[data-theme="dark"] .warn{background:#2a2108;color:#ffe9a8;border-bottom-color:#5c4a12}
+:root[data-theme="dark"] .warn button{background:#ffe9a8;color:#2a2108}
+.lab-run:disabled{opacity:.45;cursor:not-allowed}
+/* The lab is its own page: stack its cards normally instead of the dashboard's 12-column main grid. */
+#testPage{display:block!important;max-width:1200px}
+#testPage>section{grid-column:auto!important;min-width:0}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="assets/garuda.js"></script>
+</head>
+<body>
+<header>
+  <div class="hd1">
+    <div class="logo"><img class="logo-d" alt="G.A.R.U.D.A. logo (night mode)" src="assets/logo-dark.webp"><img class="logo-l" alt="G.A.R.U.D.A. logo (day mode)" src="assets/logo-light.webp"></div>
+    <div class="hdt">
+      <div class="ttl"><span class="org"><b>G.A.R.U.D.A.</b></span><h1>CubeSat Testing Lab</h1></div>
+      <div class="sub">Ground-link Automated Receiver &amp; Unified Data Analyzer · plug in, test, calibrate</div>
+    </div>
+  </div>
+  <div class="ctl"><a href="index.html" class="b-gry" style="padding:8px 12px;border-radius:6px;text-decoration:none;display:inline-block">&larr; Welcome</a> 
+    <select id="baudSel" aria-label="Baud rate"><option>9600</option><option>57600</option><option selected>115200</option><option>230400</option></select>
+    <button type="button" class="b-gry" id="theme">🌙 Night mode</button>
+  </div>
+</header>
+<main id="testPage" class="max-w-[1200px] w-full mx-auto px-4 py-5 space-y-4">
+  <section class="card">
+    <div class="grid gap-3 md:grid-cols-3 items-end">
+      <label class="text-sm">Testing lab name<input id="labNameIn" class="w-full mt-1 px-3 py-2 rounded border" placeholder="e.g. Bench Lab 1" autocomplete="off"></label>
+      <label class="text-sm">CubeSat name<input id="cubeNameIn" class="w-full mt-1 px-3 py-2 rounded border" placeholder="e.g. Nano-1" autocomplete="off"></label>
+      <p class="text-xs opacity-70">Every export carries these names, plus the date and time.</p>
+    </div>
+  </section>
+  <section class="card">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="text-xl font-semibold">CubeSat Testing Lab 🛰️</h2>
+        <p id="labStatus" class="text-sm opacity-80 mt-1">Waiting for your CubeSat…</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <span id="labSource" class="text-xs font-semibold px-3 py-1 rounded-full border" style="background:transparent;color:inherit;border-color:currentColor;opacity:.85">Not connected yet</span>
+        <button id="labConnect" type="button" class="b-red">Connect my CubeSat</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="border-color:#f0c24b">
+    <p class="text-sm"><b>Safety first ⚠️</b> The reaction wheel test spins a real wheel. Take the props off, keep cables and fingers clear, and stay ready to press <b>Stop</b>.</p>
+  </section>
+
+  <section class="card">
+    <div class="flex flex-wrap gap-2">
+      <button id="labHealth" class="b-gry lab-run" type="button">Quick health check</button>
+      <button id="labWheel" class="b-gry lab-run" type="button">Reaction wheel test</button>
+      <button id="labImu" class="b-gry lab-run" type="button">IMU calibration</button>
+      <button id="labAlt" class="b-gry lab-run" type="button">Altimeter calibration</button>
+      <button id="labFull" class="b-crim lab-run" type="button">Run everything</button>
+      <button id="labStop" class="b-red" type="button">Stop</button>
+    </div>
+    <p class="text-xs opacity-70 mt-2">"Run everything" goes health check → reaction wheel → IMU → altimeter, and waits for you at every step.</p>
+  </section>
+
+  <section id="labStepCard" class="card" hidden>
+    <div id="labStepKicker" class="text-xs uppercase tracking-wide opacity-70"></div>
+    <h3 id="labStepTitle" class="text-lg font-semibold mt-1"></h3>
+    <p id="labStepText" class="mt-1 text-sm"></p>
+    <div class="mt-3 h-3 rounded-full overflow-hidden bg-black/10"><div id="labBar" class="h-full w-0 rounded-full transition-all" style="background:#22d3ee"></div></div>
+    <p id="labReadout" class="mt-2 text-sm font-mono"></p>
+    <div id="labLiftRow" class="mt-3 flex flex-wrap items-center gap-2" hidden>
+      <label for="labLiftM" class="text-sm">How high will you lift it? (metres)</label>
+      <input id="labLiftM" type="number" value="1" min="0.2" max="5" step="0.1" class="w-24 px-2 py-1 rounded border">
+    </div>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button id="labStepGo" class="b-crim" type="button">Start this step</button>
+      <button id="labStepSkip" class="b-gry" type="button">Skip</button>
+    </div>
+  </section>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <section class="card">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <h3 class="font-semibold">Results</h3>
+        <div class="flex gap-2">
+          <button id="labClear" class="b-gry" type="button">Clear</button>
+          <button id="labSave" class="b-crim" type="button">Save test report</button><button id="labExcel" class="b-gry" type="button">Export Excel</button>
+        </div>
+      </div>
+      <div class="overflow-x-auto"><table id="labResults" class="w-full text-sm"></table></div>
+    </section>
+    <section class="card">
+      <h3 class="font-semibold mb-2">Lab notes</h3>
+      <div id="labLog" class="font-mono text-xs h-72 overflow-auto space-y-1"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h3 class="font-semibold">What the lab expects from your CubeSat 🤝</h3>
+    <p class="text-sm mt-1">The lab sends one-line commands over the same USB cable, such as <code>CMD WHEEL_START 30</code> and <code>CMD WHEEL_STOP</code>. Please answer with one JSON line like <code>{"ack":"WHEEL_START","ok":true}</code>. Lines starting with <code>#</code> show up as friendly notes. If your firmware doesn't answer, the wheel test skips itself and tells you why.</p>
+    <p class="text-sm mt-2">Send these sensor keys in JSON or CSV (short or long names both work): temp, hum, ax, ay, az, gx, gy, gz, mx, my, mz, hdg, alt, lat, lon, batt, wheel, rssi.</p>
+  </section>
+</main>
+<footer class="gfoot">Created by Niranjan CS.</footer>
+<script>
+    // =========================================================================
+    // 🧪 CubeSat Testing Lab
+    // Here's the playground! We talk to your CubeSat over the same USB cable,
+    // check every sensor, give the reaction wheel a gentle spin, and walk you
+    // through calibration one friendly step at a time.
+    // =========================================================================
+    const LAB = {
+      busy: false,       // true while a test is running
+      stop: false,       // the Stop button flips this so everything wraps up safely
+      results: [],       // one row for every check we run
+      cal: {},           // numbers we learn while calibrating (gyro bias, ground level...)
+      signs: {},         // which way each rotation went, so "right" can be checked against "left"
+      pending: {},       // command replies we're still waiting to hear back about
+      sampling: null,    // while we listen for a moment, packets collect in here
+      motion: null,      // the rotation we're timing right now
+      stepDone: null,    // lets the Go/Skip buttons (or Stop) finish a waiting step
+      last: null,        // the newest reading
+      lastT: 0,          // when the newest reading arrived
+      lineFormat: '',    // 'json' or 'csv': what your firmware sends
+      lineKeys: [],      // the keys in the last JSON line
+      lineCount: 0       // how many values the last CSV line had
+    };
+    const $L = id => document.getElementById(id);
+    const LAB_ICON = { pass: '✅', warn: '⚠️', fail: '❌', skipped: '⏭️' };
+
+    // The rotation steps. Left/right and up/down must go opposite ways, and the
+    // slow spins must really be slow. Angles are estimated from the gyro, so a
+    // little wobble is normal; the thresholds are generous on purpose.
+    const LAB_IMU_STEPS = [
+      { flat: true, title: 'Flat & still', text: 'Lay the CubeSat flat on the table and keep it perfectly still for about 4 seconds. Think of it as a tiny nap.' },
+      { id: 'left', title: 'Turn left', text: 'Turn it to the left, like steering a car, around 30° or more.', axis: 'z', minDeg: 30 },
+      { id: 'right', title: 'Turn right', text: 'Now turn it back to the right, past where you started.', axis: 'z', minDeg: 30, opposite: 'left' },
+      { id: 'up', title: 'Tilt up', text: 'Lift the nose up toward the ceiling, around 20°.', axis: 'y', minDeg: 20 },
+      { id: 'down', title: 'Tilt down', text: 'Now tip the nose down toward the floor.', axis: 'y', minDeg: 20, opposite: 'up' },
+      { id: 'cw', title: 'Spin clockwise, slowly', text: 'Spin it clockwise like a slow turntable, a full turn (270° or more). Slow and steady wins!', axis: 'z', minDeg: 270, slowMax: 90 },
+      { id: 'ccw', title: 'Spin counterclockwise, slowly', text: 'Now the other way, counterclockwise, at the same gentle pace.', axis: 'z', minDeg: 270, slowMax: 90, opposite: 'cw' },
+      { id: 'roll', title: 'Roll around the X axis', text: 'Like a drone doing a barrel roll: roll it half a turn (180°) along its long side.', axis: 'x', minDeg: 180 },
+      { id: 'pitch', title: 'Pitch around the Y axis', text: 'Now flip it nose over tail, like a drone doing a front flip, half a turn.', axis: 'y', minDeg: 180 },
+      { id: 'yaw', title: 'Yaw around the Z axis', text: 'Last one: spin it flat like a drone pirouette, half a turn.', axis: 'z', minDeg: 180 }
+    ];
+
+    // ---- Middleman #1: every serial line passes through here first ----------
+    window.__testLineHook = function (line) {
+      // "#" lines are friendly notes from the CubeSat. Show them, and keep them out of the telemetry parser.
+      if (line.startsWith('#')) { labLog('CubeSat says: ' + line.slice(1).trim()); return true; }
+      // Command replies look like {"ack":"WHEEL_START","ok":true}. Hand them to whoever asked.
+      if (line.startsWith('{') && line.includes('"ack"')) {
+        let o = null;
+        try { o = JSON.parse(line); } catch (e) { return false; }
+        const key = String(o.ack).toUpperCase();
+        if (LAB.pending[key]) { const reply = LAB.pending[key]; delete LAB.pending[key]; reply(o); }
+        labLog(`${o.ok === false ? '⚠️' : '✅'} CubeSat replied to ${key}${o.ok === false && o.reason ? ': ' + o.reason : ''}`);
+        return true;
+      }
+      // Telemetry still goes to the dashboard as usual. We just peek at its shape for the health check.
+      if (line.startsWith('{')) {
+        try { LAB.lineKeys = Object.keys(JSON.parse(line)); LAB.lineFormat = 'json'; } catch (e) { /* ignore */ }
+      } else if (/^-?[\d.]/.test(line)) {
+        LAB.lineCount = line.split(',').length; LAB.lineFormat = 'csv';
+      }
+      return false;
+    };
+
+    // ---- Middleman #2: every merged packet passes through here --------------
+    // Here's where the magic happens: we add up the gyro readings over time to estimate how far
+    // the board has turned. It's a rough estimate, but it's perfect for a friendly guided check.
+    window.__testPacketHook = function (merged, incoming) {
+      const now = Date.now();
+      const dt = LAB.lastT ? Math.min((now - LAB.lastT) / 1000, 3) : 0; // capped, so one long pause can't fake a spin
+      LAB.lastT = now;
+      LAB.last = merged;
+      if (LAB.sampling) LAB.sampling.push({ t: now, p: merged, raw: incoming || {} });
+      const m = LAB.motion;
+      if (m && dt > 0) {
+        m.angle += Number(merged['g' + m.spec.axis]) * dt;
+        m.elapsed += dt;
+        labCheckMotion(m);
+      }
+    };
+
+    // ---- Little helpers -----------------------------------------------------
+    function labLog(msg) {
+      const box = $L('labLog');
+      if (!box) return;
+      const row = document.createElement('div');
+      row.textContent = `${new Date().toTimeString().slice(0, 8)}  ${msg}`;
+      box.prepend(row);
+      while (box.children.length > 200) box.lastChild.remove();
+    }
+
+    function labRefreshStatus() {
+      const live = state.serialConnected;
+      const fresh = LAB.lastT && Date.now() - LAB.lastT < 5000;
+      let msg;
+      if (!live) msg = 'Waiting for your CubeSat… plug its ESP32 in and tap Connect. I\u2019ll wait!';
+      else if (!fresh) msg = 'Connected! Waiting for the first LoRa packets…';
+      else msg = 'Connected and receiving packets. Let\u2019s test!';
+      $L('labStatus').textContent = msg;
+      $L('labSource').textContent = live ? 'LIVE · your CubeSat' : 'Not connected';
+      $L('labConnect').textContent = live ? 'Unplug my CubeSat' : 'Connect my CubeSat';
+    }
+
+    // Listen for a moment: every packet that arrives gets collected.
+    function labSample(ms) {
+      return new Promise(resolve => {
+        LAB.sampling = [];
+        setTimeout(() => { const got = LAB.sampling || []; LAB.sampling = null; resolve(got); }, ms);
+      });
+    }
+
+    // Wait until something becomes true (or give up after a while, or when Stop is pressed).
+    function labWaitUntil(test, ms) {
+      return new Promise(resolve => {
+        const t0 = Date.now();
+        const tick = setInterval(() => {
+          if (LAB.stop) { clearInterval(tick); resolve(false); return; }
+          if (test()) { clearInterval(tick); resolve(true); return; }
+          if (Date.now() - t0 > ms) { clearInterval(tick); resolve(false); }
+        }, 200);
+      });
+    }
+
+    function labAvg(arr, key) {
+      const vals = arr.map(x => Number(x.p[key])).filter(Number.isFinite);
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+    }
+    function labNum(key) { return LAB.last ? Number(LAB.last[key]) : NaN; }
+
+    // ---- The friendly step card ---------------------------------------------
+    function labShowStep(o) {
+      $L('labStepCard').hidden = false;
+      $L('labStepKicker').textContent = o.kicker || '';
+      $L('labStepTitle').textContent = o.title;
+      $L('labStepText').textContent = o.text || '';
+      $L('labBar').style.width = '0%';
+      $L('labReadout').textContent = o.readout || '';
+      $L('labStepGo').textContent = o.goLabel || 'Start this step';
+      $L('labStepGo').hidden = !!o.quiet;
+      $L('labStepSkip').hidden = !!o.quiet;
+      $L('labStepGo').disabled = false;
+      $L('labLiftRow').hidden = !o.lift;
+    }
+    function labHideStep() { $L('labStepCard').hidden = true; LAB.stepDone = null; }
+    function labSetBar(pct, text) {
+      $L('labBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+      if (text !== undefined) $L('labReadout').textContent = text;
+    }
+    // Wait for the learner to press Start or Skip. Returns 'go' or 'skip'.
+    function labWaitButton() {
+      return new Promise(resolve => {
+        LAB.stepDone = resolve;
+        $L('labStepGo').onclick = () => { LAB.stepDone = null; resolve('go'); };
+        $L('labStepSkip').onclick = () => { LAB.stepDone = null; resolve('skip'); };
+      });
+    }
+
+    // ---- Results table + friendly notes -------------------------------------
+    function labRecord(group, name, status, detail) {
+      LAB.results.push({ group, name, status, detail, time: new Date().toISOString() });
+      labLog(`${LAB_ICON[status]} ${group} · ${name}: ${detail}`);
+      labRenderResults();
+    }
+    function labRenderResults() {
+      const body = $L('labResults');
+      const rows = LAB.results.map(r => `<tr class="border-t"><td class="py-1 pr-2">${r.group}: ${r.name}</td><td class="pr-2 whitespace-nowrap">${LAB_ICON[r.status]} ${r.status}</td><td class="py-1">${r.detail}</td></tr>`).join('');
+      body.innerHTML = '<tr><th class="text-left py-1">Check</th><th class="text-left">Result</th><th class="text-left">What I saw</th></tr>' +
+        (rows || '<tr><td colspan="3" class="py-2 opacity-70">No checks yet. Pick a test above and let\u2019s go!</td></tr>');
+    }
+
+    // ---- Talking back to the CubeSat ----------------------------------------
+    // Sends one line like "CMD WHEEL_START 30" and waits (up to 4 s) for the reply.
+    async function labSendCmd(name, arg) {
+      if (!(state.serialConnected && state.port && state.port.writable)) return null;
+      const key = name.toUpperCase();
+      const reply = new Promise(resolve => {
+        LAB.pending[key] = resolve;
+        setTimeout(() => { if (LAB.pending[key] === resolve) { delete LAB.pending[key]; resolve(null); } }, 4000);
+      });
+      const line = `CMD ${key}${arg !== undefined ? ' ' + arg : ''}`;
+      try {
+        const writer = state.port.writable.getWriter();
+        try { await writer.write(new TextEncoder().encode(line + '\n')); }
+        finally { writer.releaseLock(); }
+        labLog(`→ sent ${line}`);
+      } catch (e) {
+        labLog(`Couldn\u2019t send ${line}: ${e.message}`);
+        return null;
+      }
+      return reply;
+    }
+
+    // ---- Rotation steps (the "turn left", "spin clockwise"... part) ----------
+    function labCheckMotion(m) {
+      if (m.done) return;
+      const s = m.spec;
+      const deg = Math.abs(m.angle);
+      const sign = Math.sign(m.angle);
+      const pace = m.elapsed > 0 ? deg / m.elapsed : 0;
+      labSetBar((deg / s.minDeg) * 100, `Turned about ${Math.round(deg)}° of ${s.minDeg}°` + (s.slowMax ? ` · pace ${Math.round(pace)}°/s` : ''));
+      if (deg < s.minDeg) return;
+      if (s.slowMax && pace > s.slowMax) { labSetBar(100, 'Nice spin! Now slow it down a touch so I can read it clearly.'); return; }
+      if (s.opposite && LAB.signs[s.opposite] && sign === LAB.signs[s.opposite]) {
+        labSetBar(100, 'Hmm, that\u2019s the same way as before. Try the opposite direction!');
+        return;
+      }
+      const crossCheckMissing = s.opposite && !LAB.signs[s.opposite];
+      labFinishMotion(m, crossCheckMissing ? 'warn' : 'pass',
+        `Turned about ${Math.round(deg)}° (${sign > 0 ? 'positive' : 'negative'} direction).` +
+        (crossCheckMissing ? ' I couldn\u2019t cross-check the opposite direction, because the step before it didn\u2019t pass.' : ''));
+    }
+
+    function labFinishMotion(m, status, detail) {
+      if (m.done) return;
+      m.done = true;
+      clearTimeout(m.timer);
+      if (LAB.motion === m) LAB.motion = null;
+      if ((status === 'pass' || status === 'warn') && m.spec.id) LAB.signs[m.spec.id] = Math.sign(m.angle);
+      m.resolve({ status, detail });
+    }
+
+    async function labRunMotion(spec, idx, total) {
+      labShowStep({ kicker: `IMU · step ${idx} of ${total}`, title: spec.title, text: spec.text, readout: 'Press start when you\u2019re ready. I\u2019ll watch the gyro while you move.', goLabel: 'Start moving' });
+      if ((await labWaitButton()) === 'skip' || LAB.stop) return { status: 'skipped', detail: 'Skipped. No worries, you can come back to it.' };
+      $L('labStepGo').hidden = true;
+      LAB.lastT = 0;
+      return new Promise(resolve => {
+        const m = { spec, angle: 0, elapsed: 0, done: false, resolve };
+        LAB.motion = m;
+        $L('labStepSkip').onclick = () => labFinishMotion(m, 'skipped', 'You skipped this one.');
+        labSetBar(0, 'Go! Move it slowly and steadily…');
+        m.timer = setTimeout(() => labFinishMotion(m, 'fail', `Not quite enough movement (about ${Math.round(Math.abs(m.angle))}° of ${spec.minDeg}°). Want to give it another go?`), 45000);
+      });
+    }
+
+    // The flat & still step: average a few seconds of readings and save the resting numbers.
+    async function labRunFlat(spec, idx, total) {
+      labShowStep({ kicker: `IMU · step ${idx} of ${total}`, title: spec.title, text: spec.text, readout: 'Ready when you are.', goLabel: 'I\u2019m still, measure!' });
+      if ((await labWaitButton()) === 'skip' || LAB.stop) return { status: 'skipped', detail: 'Skipped. No worries, you can come back to it.' };
+      labSetBar(30, 'Hold still… measuring');
+      const w = await labSample(4000);
+      labSetBar(100, 'Got it!');
+      if (w.length < 2) return { status: 'fail', detail: 'Not enough packets to measure. Check the link and try again.' };
+      const ax = labAvg(w, 'ax'), ay = labAvg(w, 'ay'), az = labAvg(w, 'az');
+      const gx = labAvg(w, 'gx'), gy = labAvg(w, 'gy'), gz = labAvg(w, 'gz');
+      const g = Math.hypot(ax, ay, az), spin = Math.hypot(gx, gy, gz);
+      LAB.cal.gyroBias = [gx, gy, gz].map(v => +v.toFixed(3));
+      LAB.cal.accelOffset = [ax, ay, az - 1].map(v => +v.toFixed(3));
+      if (Math.abs(g - 1) > 0.15) return { status: 'fail', detail: `Gravity reads ${g.toFixed(2)} g instead of about 1 g. Is the board really flat and still?` };
+      if (spin > 3) return { status: 'warn', detail: `It was still wiggling (${spin.toFixed(1)}°/s). I saved the numbers anyway, but a steadier hold helps.` };
+      return { status: 'pass', detail: `Gravity reads ${g.toFixed(2)} g. Resting gyro bias saved as ${LAB.cal.gyroBias.join(', ')} °/s.` };
+    }
+
+    async function labRunImu() {
+      const steps = LAB_IMU_STEPS;
+      for (let i = 0; i < steps.length && !LAB.stop; i++) {
+        const spec = steps[i];
+        const res = spec.flat ? await labRunFlat(spec, i + 1, steps.length) : await labRunMotion(spec, i + 1, steps.length);
+        if (!LAB.stop) labRecord('IMU', spec.title, res.status, res.detail);
+      }
+    }
+
+    // ---- Altimeter -----------------------------------------------------------
+    async function labRunAltRef() {
+      labShowStep({ kicker: 'Altimeter · 1 of 2', title: 'Set ground level', text: 'Park the CubeSat on the table, still, for 5 seconds. This becomes our "zero".', readout: 'Ready when you are!', goLabel: 'Start measuring' });
+      if ((await labWaitButton()) === 'skip' || LAB.stop) return { status: 'skipped', detail: 'Skipped.' };
+      labSetBar(30, 'Measuring ground level…');
+      const w = await labSample(5000);
+      labSetBar(100, 'Got it!');
+      const alts = w.map(x => Number(x.p.altitude)).filter(Number.isFinite);
+      if (alts.length < 2) return { status: 'fail', detail: 'Not enough readings. Check the link and try again.' };
+      const mean = alts.reduce((a, b) => a + b, 0) / alts.length;
+      const wobble = Math.sqrt(alts.reduce((a, b) => a + (b - mean) ** 2, 0) / alts.length);
+      LAB.cal.altRef = +mean.toFixed(2);
+      if (wobble > 0.6) return { status: 'warn', detail: `Ground level wobbles by about ±${wobble.toFixed(2)} m. The board may have moved, or the sensor is noisy. Saved anyway.` };
+      return { status: 'pass', detail: `Ground level set at ${mean.toFixed(2)} m (wobble ±${wobble.toFixed(2)} m).` };
+    }
+
+    async function labRunAltLift() {
+      labShowStep({ kicker: 'Altimeter · 2 of 2', title: 'Lift it up', text: 'Choose how high to lift it (1 m is a good start), hold the CubeSat steady at that height, then press the button. I\u2019ll average the reading.', readout: 'Lift it, hold steady, then press!', goLabel: 'I\u2019m holding it up, measure!', lift: true });
+      if ((await labWaitButton()) === 'skip' || LAB.stop) return { status: 'skipped', detail: 'Skipped.' };
+      $L('labLiftRow').hidden = true;
+      if (LAB.cal.altRef === undefined) return { status: 'fail', detail: 'Set the ground level first, then try the lift again.' };
+      const want = Math.min(5, Math.max(0.2, Number($L('labLiftM').value) || 1));
+      labSetBar(30, 'Measuring… hold steady');
+      const w = await labSample(4000);
+      labSetBar(100, 'Got it!');
+      const alts = w.map(x => Number(x.p.altitude)).filter(Number.isFinite);
+      if (alts.length < 2) return { status: 'fail', detail: 'Not enough readings. Check the link and try again.' };
+      const mean = alts.reduce((a, b) => a + b, 0) / alts.length;
+      const delta = mean - LAB.cal.altRef;
+      LAB.cal.altLiftTarget = want;
+      LAB.cal.altLiftMeasured = +delta.toFixed(2);
+      const tol = Math.max(0.3, 0.3 * want);
+      if (Math.abs(delta - want) <= tol) return { status: 'pass', detail: `Measured ${delta.toFixed(2)} m of lift for a ${want} m lift. Spot on!` };
+      return { status: 'fail', detail: `Measured ${delta.toFixed(2)} m, but the lift was about ${want} m (off by ${(delta - want).toFixed(2)} m). Check the sensor or try again.` };
+    }
+
+    async function labRunAlt() {
+      const r1 = await labRunAltRef();
+      if (LAB.stop) return;
+      labRecord('Altimeter', 'Ground level', r1.status, r1.detail);
+      if (r1.status === 'skipped') { labRecord('Altimeter', 'Lift check', 'skipped', 'Needs the ground level first.'); return; }
+      const r2 = await labRunAltLift();
+      if (!LAB.stop) labRecord('Altimeter', 'Lift check', r2.status, r2.detail);
+    }
+
+    // ---- Health check: every sensor and the telemetry itself ----------------
+    async function labRunHealth() {
+      labShowStep({ kicker: 'Health check', title: 'Quick health check', text: 'I\u2019m listening to everything your CubeSat sends for about 6 seconds. No moving needed!', readout: 'Listening…', quiet: true });
+      const before = state.telemetryLog.length;
+      const w = await labSample(6000);
+      labHideStep();
+      if (LAB.stop) return;
+      const n = w.length;
+      if (n === 0) {
+        labRecord('Health', 'Packets arriving', 'fail', 'No packets at all. Check the LoRa antenna, the baud rate (115200 is the usual one) and the USB cable.');
+        return;
+      }
+      labRecord('Health', 'Packets arriving', n >= 3 ? 'pass' : 'warn', n >= 3 ? `${n} packets in 6 seconds. Steady link!` : `Only ${n} packet(s) in 6 seconds. The link may be weak or slow.`);
+      const logged = state.telemetryLog.length - before;
+      labRecord('Health', 'Data logging', logged > 0 ? 'pass' : 'fail', logged > 0 ? `${logged} new packets saved for your charts and exports.` : 'Packets came in, but nothing was logged. Something may be off in the parser.');
+
+      // Telemetry: does every sensor show up in the data?
+      const wanted = { temperature: ['temp', 'temperature'], humidity: ['hum', 'humidity'], accel_x: ['ax'], accel_y: ['ay'], accel_z: ['az'], gyro_x: ['gx'], gyro_y: ['gy'], gyro_z: ['gz'], mag_x: ['mx'], mag_y: ['my'], mag_z: ['mz'], heading: ['hdg', 'heading'], altitude: ['alt', 'altitude'], latitude: ['lat'], longitude: ['lon'], battery: ['batt', 'battery', 'battery_v'], wheel: ['wheel', 'wheel_strength'], rssi: ['rssi'] };
+      if (LAB.lineFormat === 'json') {
+        const missing = Object.keys(wanted).filter(k => !wanted[k].some(a => LAB.lineKeys.includes(a)));
+        labRecord('Telemetry', 'Every sensor reporting', missing.length ? 'warn' : 'pass', missing.length ? `Missing: ${missing.join(', ')}. The dashboard will fill these with old values, so check your sketch.` : 'All sensor keys are arriving. Looks complete!');
+      } else if (LAB.lineFormat === 'csv') {
+        const ok = LAB.lineCount >= 15;
+        labRecord('Telemetry', 'Every sensor reporting', ok ? 'pass' : 'fail', ok ? `CSV line with ${LAB.lineCount} values. Looks complete!` : `Only ${LAB.lineCount} CSV values. The lab expects at least 15.`);
+      } else {
+        labRecord('Telemetry', 'Line format', 'fail', 'I couldn\u2019t read the line format. Send JSON or CSV, one line per packet.');
+      }
+
+      const t = labAvg(w, 'temp');
+      labRecord('Sensors', 'Temperature', t > -20 && t < 60 ? 'pass' : 'warn', `${t.toFixed(1)} °C`);
+      const h = labAvg(w, 'humidity');
+      labRecord('Sensors', 'Humidity', h >= 0 && h <= 100 ? 'pass' : 'warn', `${h.toFixed(1)} %`);
+      const pull = Math.hypot(labAvg(w, 'ax'), labAvg(w, 'ay'), labAvg(w, 'az'));
+      labRecord('Sensors', 'Accelerometer', pull > 0.2 && pull < 3 ? 'pass' : 'warn', `Total pull ${pull.toFixed(2)} g (about 1 g when still is normal).`);
+      const field = Math.hypot(labAvg(w, 'mx'), labAvg(w, 'my'), labAvg(w, 'mz'));
+      labRecord('Sensors', 'Magnetometer', field > 5 && field < 150 ? 'pass' : 'warn', `Field strength ${field.toFixed(1)} µT`);
+      const v = labNum('battery_v');
+      labRecord('Power', 'Battery', v >= 3.6 ? 'pass' : v >= 3.3 ? 'warn' : 'fail', isFinite(v) ? `${v.toFixed(2)} V` : 'No reading');
+      const rssi = labAvg(w, 'rssi');
+      labRecord('Link', 'Signal strength', rssi >= -110 ? 'pass' : 'warn', isFinite(rssi) ? `${rssi.toFixed(0)} dBm` : 'No reading');
+      const gps = w.some(x => x.p.gps_fix);
+      labRecord('GPS', 'Position fix', gps ? 'pass' : 'warn', gps ? 'Got a GPS fix. Nice!' : 'No GPS fix yet. That\u2019s normal indoors.');
+    }
+
+    // ---- Reaction wheel: spin up gently, check, stop, check it slowed ------
+    async function labRunWheel() {
+      if (!state.serialConnected) {
+        labRecord('Reaction wheel', 'Connection', 'skipped', 'Connect your CubeSat first. The wheel test needs the real board.');
+        return;
+      }
+      labShowStep({ kicker: 'Reaction wheel', title: 'Spin the reaction wheel (gently!)', text: 'Make sure the props are off and cables and fingers are clear. I\u2019ll spin the wheel up a little for a few seconds, then stop it.', readout: 'Ready when you are.', goLabel: 'Wheel is clear, spin it!' });
+      if ((await labWaitButton()) === 'skip' || LAB.stop) {
+        labRecord('Reaction wheel', 'Test', 'skipped', 'Skipped. Come back when the wheel is clear.');
+        return;
+      }
+      $L('labStepGo').hidden = true;
+      $L('labStepSkip').hidden = true;
+      labSetBar(10, 'Measuring the resting wheel…');
+      const base = labAvg(await labSample(2500), 'wheel_strength');
+      labSetBar(30, 'Spinning up gently…');
+      const started = await labSendCmd('WHEEL_START', '30');
+      if (!started) {
+        labRecord('Reaction wheel', 'Start command', 'skipped', 'Your CubeSat didn\u2019t answer WHEEL_START. Its firmware may not have the wheel command yet. See the notes below the results.');
+        labHideStep();
+        return;
+      }
+      if (started.ok === false) {
+        labRecord('Reaction wheel', 'Start command', 'fail', `The CubeSat refused to start the wheel${started.reason ? ' (' + started.reason + ')' : ''}.`);
+        labHideStep();
+        return;
+      }
+      try {
+        const up = await labWaitUntil(() => labNum('wheel_strength') >= base + 8, 7000);
+        if (!LAB.stop) labRecord('Reaction wheel', 'Speeds up', up ? 'pass' : 'fail',
+          up ? `Wheel effort rose from ${base.toFixed(1)}% to ${labNum('wheel_strength').toFixed(1)}%.` : 'The effort didn\u2019t climb by 8%. Check the motor driver and its power.');
+        labSetBar(60, 'Holding the spin for 3 seconds…');
+        await labSample(3000);
+      } finally {
+        labSetBar(80, 'Stopping the wheel…');
+        const stopped = await labSendCmd('WHEEL_STOP');
+        if (!stopped) labRecord('Reaction wheel', 'Stop command', 'fail', 'No reply to WHEEL_STOP! If the wheel keeps spinning, cut its power right away.');
+      }
+      const down = await labWaitUntil(() => labNum('wheel_strength') <= base + 3, 8000);
+      if (!LAB.stop) labRecord('Reaction wheel', 'Slows back down', down ? 'pass' : 'fail',
+        down ? 'The wheel came back to rest. Smooth!' : 'It didn\u2019t slow back down in time. Check it before the next test.');
+      labSetBar(100, 'Wheel test finished.');
+      labHideStep();
+    }
+
+    // ---- Runners, Stop, and the report -------------------------------------
+    function labStart() {
+      LAB.busy = true;
+      LAB.stop = false;
+      document.querySelectorAll('.lab-run').forEach(b => b.disabled = true);
+    }
+    function labEnd() {
+      LAB.busy = false;
+      LAB.motion = null;
+      labHideStep();
+      document.querySelectorAll('.lab-run').forEach(b => b.disabled = false);
+      if (LAB.results.length) labSummary();
+    }
+    async function labSingle(fn) {
+      if (LAB.busy) return;
+      if (!state.serialConnected) { labLog('Connect your CubeSat first. The tests need live packets from it.'); return; }
+      labStart();
+      try { await fn(); }
+      catch (e) { labLog('Oops, something went wrong: ' + e.message); }
+      finally { labEnd(); }
+    }
+    async function labFull() {
+      if (LAB.busy) return;
+      if (!state.serialConnected) { labLog('Connect your CubeSat first. The tests need live packets from it.'); return; }
+      labStart();
+      try {
+        labLog('Starting the full test. Grab a coffee, this takes a few minutes!');
+        await labRunHealth(); if (LAB.stop) return;
+        await labRunWheel(); if (LAB.stop) return;
+        await labRunImu(); if (LAB.stop) return;
+        await labRunAlt();
+      } catch (e) {
+        labLog('Oops, something went wrong: ' + e.message);
+      } finally { labEnd(); }
+    }
+    function labStop() {
+      if (!LAB.busy) return;
+      LAB.stop = true;
+      labLog('Stop requested. Wrapping up safely…');
+      if (LAB.motion) labFinishMotion(LAB.motion, 'skipped', 'Stopped by you.');
+      if (LAB.stepDone) { const f = LAB.stepDone; LAB.stepDone = null; f('skip'); }
+    }
+    function labSummary() {
+      const c = { pass: 0, warn: 0, fail: 0, skipped: 0 };
+      LAB.results.forEach(r => c[r.status]++);
+      labLog(`Summary: ✅ ${c.pass} passed · ⚠️ ${c.warn} to double-check · ❌ ${c.fail} failed · ⏭️ ${c.skipped} skipped`);
+    }
+    function labSaveReport() {
+      if (!LAB.results.length) { showToast('Nothing to save yet. Run a test first!'); return; }
+      const count = s => LAB.results.filter(r => r.status === s).length;
+      const report = {
+        app: 'G.A.R.U.D.A.',
+        builtBy: 'Niranjan CS',
+        generatedAt: new Date().toISOString(),
+        dataSource: state.serialConnected ? 'live CubeSat' : 'practice (simulated)',
+        summary: { passed: count('pass'), warnings: count('warn'), failed: count('fail'), skipped: count('skipped') },
+        calibration: LAB.cal,
+        results: LAB.results
+      };
+      triggerFileDownload('garuda_test_report.json', JSON.stringify(report, null, 2), 'application/json');
+      showToast('Saved your test report as garuda_test_report.json. Nice work!');
+    }
+
+
+    // =========================================================================
+    // Standalone plumbing: the lab talks to the CubeSat through this small
+    // reader. It turns each line (JSON or CSV) into a reading and hands it to
+    // the lab, the same way the full dashboard does.
+    // =========================================================================
+    const state = { serialConnected: false, port: null, keepReading: false, telemetryLog: [], current: {} };
+    let readingCount = 0;
+    const SHIM_ALIASES = { temp: ['temp','temperature'], humidity: ['hum','humidity'], ax: ['ax'], ay: ['ay'], az: ['az'], gx: ['gx'], gy: ['gy'], gz: ['gz'], mx: ['mx'], my: ['my'], mz: ['mz'], heading: ['hdg','heading'], altitude: ['alt','altitude'], lat: ['lat'], lon: ['lon'], rssi: ['rssi'], snr: ['snr'], wheel_strength: ['wheel','wheel_strength'], gps_fix: ['gps_fix'] };
+    const CSV_ORDER = ['temp','hum','ax','ay','az','gx','gy','gz','mx','my','mz','hdg','alt','lat','lon','batt','wheel'];
+
+    function showToast(msg) { labLog(msg); }
+    function triggerFileDownload(name, content, type) {
+      GARUDA.download(name, content, type);
+    }
+
+    function handleLine(raw) {
+      const line = raw.trim();
+      if (!line) return;
+      // The lab gets first look at every line (acks and # notes are its own).
+      if (window.__testLineHook && window.__testLineHook(line)) return;
+      let obj;
+      if (line.startsWith('{')) {
+        try { obj = JSON.parse(line); } catch (e) { return; }
+      } else {
+        const vals = line.split(',').map(Number);
+        if (vals.length < 15 || vals.some(v => !Number.isFinite(v))) return;
+        obj = {};
+        CSV_ORDER.forEach((k, i) => { if (i < vals.length) obj[k] = vals[i]; });
+      }
+      const p = {};
+      for (const k in SHIM_ALIASES) {
+        const key = SHIM_ALIASES[k].find(a => obj[a] !== undefined);
+        if (key !== undefined) p[k] = typeof obj[key] === 'boolean' ? (obj[key] ? 1 : 0) : Number(obj[key]);
+      }
+      // Battery: a value of 5 or less is volts (like 3.96), anything bigger is a percentage.
+      const rawBatt = obj.battery ?? obj.batt ?? obj.battery_v;
+      if (typeof rawBatt === 'number') {
+        if (rawBatt > 0 && rawBatt <= 5) { p.battery_v = rawBatt; p.battery = Math.max(0, Math.min(100, Math.round((rawBatt - 3.3) / 0.9 * 100))); }
+        else p.battery = rawBatt;
+      }
+      const merged = { ...state.current, ...p };
+      state.current = merged;
+      state.telemetryLog.push({ ...merged, packet_id: ++readingCount });
+      if (window.__testPacketHook) window.__testPacketHook(merged, obj);
+    }
+
+    async function readLoop() {
+      const dec = new TextDecoderStream();
+      state.port.readable.pipeTo(dec.writable).catch(() => {});
+      const reader = dec.readable.getReader();
+      state.reader = reader;
+      let buf = '';
+      try {
+        while (state.keepReading) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += value;
+          let i;
+          while ((i = buf.indexOf('\n')) >= 0) { handleLine(buf.slice(0, i)); buf = buf.slice(i + 1); }
+        }
+      } catch (e) {
+        labLog('The stream paused (' + e.message + '). Reconnect when you\u2019re ready.');
+      } finally {
+        try { reader.releaseLock(); } catch (e) { /* already released */ }
+      }
+    }
+
+    async function connectPort() {
+      if (!('serial' in navigator)) {
+        labLog('Hey there! To connect to the hardware you\u2019ll need a browser with Web Serial, like Chrome or Edge.');
+        return;
+      }
+      if (state.serialConnected) { await disconnectPort(); return; }
+      try {
+        const baud = parseInt($L('baudSel').value, 10) || 115200;
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: baud });
+        state.port = port; state.serialConnected = true; state.keepReading = true;
+        labLog('Yay, connected at ' + baud + ' baud! Listening for packets\u2026');
+        readLoop();
+      } catch (e) {
+        labLog('Hmm, couldn\u2019t open the port (' + (e.message || 'check the USB cable') + '). No harm done, try again!');
+      }
+    }
+
+    async function disconnectPort() {
+      state.keepReading = false;
+      try { if (state.reader) await state.reader.cancel(); } catch (e) { /* ignore */ }
+      try { if (state.port) await state.port.close(); } catch (e) { /* ignore */ }
+      state.port = null; state.serialConnected = false;
+      labLog('CubeSat unplugged. Connect again whenever you\u2019re ready.');
+    }
+
+    function setTheme(t) {
+      document.documentElement.dataset.theme = t;
+      $L('theme').textContent = t === 'dark' ? '\u2600 Day mode' : '\U0001F319 Night mode';
+      try { localStorage.setItem('garuda-lab-theme', t); } catch (e) { /* ignore */ }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+            $L('labConnect').addEventListener('click', connectPort);
+      $L('theme').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
+      $L('labHealth').addEventListener('click', () => labSingle(labRunHealth));
+      $L('labWheel').addEventListener('click', () => labSingle(labRunWheel));
+      $L('labImu').addEventListener('click', () => labSingle(labRunImu));
+      $L('labAlt').addEventListener('click', () => labSingle(labRunAlt));
+      $L('labFull').addEventListener('click', labFull);
+      $L('labStop').addEventListener('click', labStop);
+      $L('labSave').addEventListener('click', labSaveReport);
+      $L('labExcel').addEventListener('click', () => {
+        if (!LAB.results.length) { showToast('Nothing to save yet. Run a test first!'); return; }
+        GARUDA.exportXlsx(LAB.results.map(r => ({ group: r.group, check: r.name, result: r.status, what_i_saw: r.detail, time: r.time })), 'lab-results');
+        showToast('Saved your lab results as an Excel file.');
+      });
+      const syncNames = () => GARUDA.setNames({ lab: $L('labNameIn').value.trim(), cubesat: $L('cubeNameIn').value.trim() });
+      const nm = GARUDA.names();
+      $L('labNameIn').value = nm.lab; $L('cubeNameIn').value = nm.cubesat;
+      $L('labNameIn').addEventListener('input', syncNames);
+      $L('cubeNameIn').addEventListener('input', syncNames);
+      $L('labClear').addEventListener('click', () => {
+        if (LAB.busy) return;
+        LAB.results = []; LAB.cal = {}; LAB.signs = {};
+        labRenderResults();
+        labLog('Cleared. Fresh start!');
+      });
+      let th = null;
+      try { th = localStorage.getItem('garuda-lab-theme'); } catch (e) { /* ignore */ }
+      setTheme(th || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+      labRenderResults();
+      labRefreshStatus();
+      setInterval(labRefreshStatus, 1000);
+      labLog('Welcome to the CubeSat Testing Lab! Plug in your ESP32 and tap Connect.');
+    });
+
+</script>
+</body>
+</html>
